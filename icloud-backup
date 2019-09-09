@@ -18,57 +18,21 @@ esac
 
 TAR="$DIR/$(date +'%Y-%m-%d') iCloud Backup.tar"
 
-rm -rf /tmp/Backup
-mkdir -p /tmp/Backup/Notes
+rm -rf /tmp/Notes
+mkdir /tmp/Notes
 
 osascript -l JavaScript <<'JS'
-ObjC.import("stdlib");
-ObjC.import("Foundation");
-
-var app = Application.currentApplication();
-app.includeStandardAdditions = true;
-
-const Finder = Application("Finder");
-const Notes = Application("Notes");
-
-const FileManager = $.NSFileManager.defaultManager;
-
 function run() {
-  const output = "/tmp/Backup/Notes";
-  const tmpdir = "/tmp/Notes";
-
-  FileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(
-    tmpdir,
-    true,
-    {},
-    null
-  );
-  FileManager.changeCurrentDirectoryPath(tmpdir);
-
+  const Notes = Application("Notes");
   for (const note of Notes.notes()) {
-    writeToFile(`${tmpdir}/${note.name()}.html`, note.body());
+    const str = $.NSString.alloc.initWithUTF8String(note.body());
+    str.writeToFileAtomicallyEncodingError(
+      `/tmp/Notes/${note.name()}.html`,
+      true,
+      $.NSUTF8StringEncoding,
+      null
+    );
   }
-
-  if (output.match(/.zip$/)) {
-    $.system(`zip -r "${output}" .`);
-  } else if (output.match(/.(tgz|gz)$/)) {
-    $.system(`tar -cvzf "${output}" .`);
-  } else {
-    $.system(`cp -R . "${output}"`);
-  }
-
-  FileManager.changeCurrentDirectoryPath("/");
-  FileManager.removeItemAtPathError(tmpdir, null);
-}
-
-function writeToFile(filename, data) {
-  const str = $.NSString.alloc.initWithUTF8String(data);
-  str.writeToFileAtomicallyEncodingError(
-    filename,
-    true,
-    $.NSUTF8StringEncoding,
-    null
-  );
 }
 JS
 
@@ -78,5 +42,5 @@ tar -v -r -f "$TAR" -C "$HOME" "Desktop"
 tar -v -r -f "$TAR" -C "$HOME" "Documents"
 tar -v -r -f "$TAR" -C "$HOME/Library" "Mobile Documents"
 tar -v -r -f "$TAR" -C "$HOME/Library" "Keychains"
-tar -v -r -f "$TAR" -C "/tmp/Backup" "Notes"
+tar -v -r -f "$TAR" -C "/tmp" "Notes"
 gzip -f "$TAR"
