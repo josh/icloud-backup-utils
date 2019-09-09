@@ -4,11 +4,11 @@ Scripts creating backups of iCloud data.
 
 ## Apps
 
-- [ ] iCloud Drive
+- [X] iCloud Drive
 - [ ] Photos
 - [ ] Mail
 - [ ] Contacts
 - [ ] Calendar
 - [ ] Reminders
-- [ ] Notes
-- [ ] Keychain
+- [X] Notes
+- [X] Keychain
