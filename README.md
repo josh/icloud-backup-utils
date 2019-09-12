@@ -12,3 +12,8 @@ Scripts creating backups of iCloud data.
 - [ ] Reminders
 - [X] Notes
 - [X] Keychain
+
+## Support
+
+- [x] macOS Mojave 10.13
+- [ ] macOS Catalina 10.15 coming soon
