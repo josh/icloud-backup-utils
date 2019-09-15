@@ -33,7 +33,7 @@ backup() {
   export_notes "/tmp/Notes"
   tar -rf "1" -C "/tmp" "Notes"
 
-  [ "$GZIP" != "0" ] || gzip -f "$1"
+  [ "$GZIP" == "0" ] || gzip -f "$1"
 }
 
 export_notes() {
