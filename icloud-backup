@@ -33,7 +33,7 @@ backup() {
   export_notes "/tmp/Notes"
   tar -rf "1" -C "/tmp" "Notes"
 
-  [ "$GZIP" == "0" ] || gzip -f "$1"
+  gzip -f "$1"
 }
 
 export_notes() {
@@ -60,14 +60,11 @@ compare() {
   mkdir -p /tmp/icloud-backup
   pushd /tmp/icloud-backup >/dev/null
 
-  mkdir current backup
+  tar --no-same-permissions -xzf "$1"
 
-  GZIP=0 backup current.tar
-
-  tar -C current --no-same-permissions -xf current.tar
-  tar -C backup --no-same-permissions -xzf "$1"
-
-  comm -3 <(md5sum current/ | sort) <(md5sum backup/ | sort)
+  comm -3 <(md5sum "Desktop/" | sort) <(md5sum "$HOME/Desktop" | sort)
+  comm -3 <(md5sum "Documents/" | sort) <(md5sum "$HOME/Documents" | sort)
+  comm -3 <(md5sum "Mobile Documents/" | sort) <(md5sum "$HOME/Library/Mobile Documents" | sort)
 }
 
 md5sum() {
