@@ -17,3 +17,9 @@ Scripts creating backups of iCloud data.
 
 - [x] macOS Mojave 10.14
 - [ ] macOS Catalina 10.15 coming soon
+
+## Install
+
+```sh
+$ brew install josh/tap/icloud-backup-utils
+```
