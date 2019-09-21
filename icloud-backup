@@ -31,7 +31,7 @@ backup() {
   tar -rf "$1" -C "$HOME/Library" "Keychains"
 
   export_notes "/tmp/Notes"
-  tar -rf "1" -C "/tmp" "Notes"
+  tar -rf "$1" -C "/tmp" "Notes"
 
   gzip -f "$1"
 }
