@@ -1,7 +1,7 @@
 #!/bin/bash
 # usage: icloud-backup [--compare] ~/Backup
 
-set -e
+set -euo pipefail
 
 main() {
   case "$1" in
@@ -39,20 +39,20 @@ backup() {
 export_notes() {
   rm -rf "$1"
   mkdir "$1"
-  osascript -l JavaScript <<'JS'
-    function run() {
-      const Notes = Application("Notes");
-      for (const note of Notes.notes()) {
-        const str = $.NSString.alloc.initWithUTF8String(note.body());
-        str.writeToFileAtomicallyEncodingError(
-          `/tmp/Notes/${note.name()}.html`,
-          true,
-          $.NSUTF8StringEncoding,
-          null
-        );
-      }
-    }
-JS
+  while IFS= read -r -d '' && IFS= read -r -d '' name && IFS= read -r -d '' body; do
+    echo "$body" > "$1/$name.html"
+  done < <(print_notes)
+}
+
+print_notes() {
+  osascript 2>&1 <<'AS'
+  tell application "Notes"
+    set myDelim to character id 0
+    repeat with theNote in notes
+      log myDelim & (get name of theNote) & myDelim & (get body of theNote) & myDelim
+    end repeat
+  end tell
+AS
 }
 
 compare() {
