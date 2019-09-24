@@ -39,9 +39,10 @@ backup() {
 export_notes() {
   rm -rf "$1"
   mkdir "$1"
-  while IFS= read -r -d '' && IFS= read -r -d '' name && IFS= read -r -d '' body; do
+  while IFS= read -r -d '' status && IFS= read -r -d '' name && IFS= read -r -d '' body; do
     echo "$body" > "$1/$name.html"
   done < <(print_notes)
+  [ "$status" = $'\nOK\n' ]
 }
 
 print_notes() {
@@ -51,6 +52,7 @@ print_notes() {
     repeat with theNote in notes
       log myDelim & (get name of theNote) & myDelim & (get body of theNote) & myDelim
     end repeat
+    log "OK"
   end tell
 AS
 }
