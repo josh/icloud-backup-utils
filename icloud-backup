@@ -4,49 +4,49 @@
 set -euo pipefail
 
 main() {
-  case "$1" in
-  --help | -h )
-    sed -ne '/^#/!q;s/.\{1,2\}//;1d;p' < "$0"
-    exit 0
-    ;;
-  --compare )
-    compare "$2"
-    exit 0
-    ;;
-  '' )
-    "$0" --help | head -1 >&2
-    exit 1
-    ;;
-  * )
-    backup "$1/$(date +'%Y-%m-%d') iCloud Backup.tar"
-    exit 0
-    ;;
-  esac
+	case "$1" in
+	--help | -h)
+		sed -ne '/^#/!q;s/.\{1,2\}//;1d;p' <"$0"
+		exit 0
+		;;
+	--compare)
+		compare "$2"
+		exit 0
+		;;
+	'')
+		"$0" --help | head -1 >&2
+		exit 1
+		;;
+	*)
+		backup "$1/$(date +'%Y-%m-%d') iCloud Backup.tar"
+		exit 0
+		;;
+	esac
 }
 
 backup() {
-  tar -rf "$1" -C "$HOME" "Desktop"
-  tar -rf "$1" -C "$HOME" "Documents"
-  tar -rf "$1" -C "$HOME/Library" "Mobile Documents"
-  tar -rf "$1" -C "$HOME/Library" "Keychains"
+	tar -rf "$1" -C "$HOME" "Desktop"
+	tar -rf "$1" -C "$HOME" "Documents"
+	tar -rf "$1" -C "$HOME/Library" "Mobile Documents"
+	tar -rf "$1" -C "$HOME/Library" "Keychains"
 
-  export_notes "/tmp/Notes"
-  tar -rf "$1" -C "/tmp" "Notes"
+	export_notes "/tmp/Notes"
+	tar -rf "$1" -C "/tmp" "Notes"
 
-  gzip -f "$1"
+	gzip -f "$1"
 }
 
 export_notes() {
-  rm -rf "$1"
-  mkdir "$1"
-  while IFS= read -r -d '' status && IFS= read -r -d '' name && IFS= read -r -d '' body; do
-    echo "$body" > "$1/$name.html"
-  done < <(print_notes)
-  [ "$status" = $'\nOK\n' ]
+	rm -rf "$1"
+	mkdir "$1"
+	while IFS= read -r -d '' status && IFS= read -r -d '' name && IFS= read -r -d '' body; do
+		echo "$body" >"$1/$name.html"
+	done < <(print_notes)
+	[ "$status" = $'\nOK\n' ]
 }
 
 print_notes() {
-  osascript 2>&1 <<'AS'
+	osascript 2>&1 <<'AS'
   tell application "Notes"
     set myDelim to character id 0
     repeat with theNote in notes
@@ -58,23 +58,23 @@ AS
 }
 
 compare() {
-  rm -rf /tmp/icloud-backup
-  mkdir -p /tmp/icloud-backup
-  pushd /tmp/icloud-backup >/dev/null
+	rm -rf /tmp/icloud-backup
+	mkdir -p /tmp/icloud-backup
+	pushd /tmp/icloud-backup >/dev/null
 
-  tar --no-same-permissions -xzf "$1"
+	tar --no-same-permissions -xzf "$1"
 
-  comm -3 <(md5sum "Desktop/" | sort) <(md5sum "$HOME/Desktop" | sort)
-  comm -3 <(md5sum "Documents/" | sort) <(md5sum "$HOME/Documents" | sort)
-  comm -3 <(md5sum "Mobile Documents/" | sort) <(md5sum "$HOME/Library/Mobile Documents" | sort)
+	comm -3 <(md5sum "Desktop/" | sort) <(md5sum "$HOME/Desktop" | sort)
+	comm -3 <(md5sum "Documents/" | sort) <(md5sum "$HOME/Documents" | sort)
+	comm -3 <(md5sum "Mobile Documents/" | sort) <(md5sum "$HOME/Library/Mobile Documents" | sort)
 }
 
 md5sum() {
-  pushd "$1" >/dev/null
-  find . -type f -print0 | while IFS= read -rd '' path; do
-    md5 -r "$path"
-  done
-  popd >/dev/null
+	pushd "$1" >/dev/null
+	find . -type f -print0 | while IFS= read -rd '' path; do
+		md5 -r "$path"
+	done
+	popd >/dev/null
 }
 
 main "$@"
