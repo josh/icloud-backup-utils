@@ -40,7 +40,8 @@ export_notes() {
 	rm -rf "$1"
 	mkdir "$1"
 	while IFS= read -r -d '' status && IFS= read -r -d '' name && IFS= read -r -d '' body; do
-		echo "$body" >"$1/$name.html"
+		safe_name="$(echo "$name" | sed -e 's/[^A-Za-z0-9 ._-]//g')"
+		echo "$body" >"$1/$safe_name.html"
 	done < <(print_notes)
 	[ "$status" = $'\nOK\n' ]
 }
