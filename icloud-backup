@@ -3,6 +3,13 @@
 
 set -euo pipefail
 
+noitfy_error() {
+	if command -v terminal-notifier; then
+		terminal-notifier -title "icloud-backup" -subtitle "$(date)" -message "Backup failed"
+	fi
+}
+trap noitfy_error ERR
+
 main() {
 	case "$1" in
 	--help | -h)
