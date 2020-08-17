@@ -17,6 +17,7 @@ Scripts creating backups of iCloud data.
 
 - [x] macOS Mojave 10.14
 - [x] macOS Catalina 10.15
+- [ ] macOS Big Sur 11
 
 ## Install
 
