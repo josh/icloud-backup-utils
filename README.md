@@ -9,7 +9,7 @@ Scripts creating backups of iCloud data.
 - [ ] Mail
 - [ ] Contacts
 - [ ] Calendar
-- [ ] Reminders
+- [x] Reminders
 - [x] Notes
 - [x] Keychain
 

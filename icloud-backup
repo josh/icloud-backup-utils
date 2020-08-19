@@ -40,6 +40,9 @@ backup() {
 	export_notes "/tmp/Notes"
 	tar -rf "$1" -C "/tmp" "Notes"
 
+	export_reminders "/tmp/Reminders"
+	tar -rf "$1" -C "/tmp" "Reminders"
+
 	gzip -f "$1"
 }
 
@@ -63,6 +66,91 @@ print_notes() {
     end repeat
     log "OK"
   end tell
+AS
+}
+
+export_reminders() {
+	rm -rf "$1"
+	mkdir "$1"
+
+	print_reminders_accounts >"$1/accounts.tsv"
+	print_reminders_lists >"$1/lists.tsv"
+	print_reminders_reminders >"$1/reminders.tsv"
+}
+
+print_reminders_accounts() {
+	osascript 2>&1 <<'AS'
+set rowSep to "\n"
+set colSep to "\t"
+
+tell application "Reminders"
+	log "id" & colSep & ¬
+		"name"
+	repeat with theAccount in every account
+		log (get id of theAccount) & colSep & ¬
+			(get name of theAccount)
+	end repeat
+end tell
+AS
+}
+
+print_reminders_lists() {
+	osascript 2>&1 <<'AS'
+set rowSep to "\n"
+set colSep to "\t"
+
+tell application "Reminders"
+	log "id" & colSep & ¬
+		"name" & colSep & ¬
+		"container" & colSep & ¬
+		"color" & colSep & ¬
+		"emblem"
+	repeat with theList in every list
+		log (get id of theList) & colSep & ¬
+			(get name of theList) & colSep & ¬
+			(get id of container of theList) & colSep & ¬
+			(get color of theList) & colSep & ¬
+			(get emblem of theList)
+	end repeat
+end tell
+AS
+}
+
+print_reminders_reminders() {
+	osascript 2>&1 <<'AS'
+set rowSep to "\n"
+set colSep to "\t"
+
+tell application "Reminders"
+	log "id" & colSep & ¬
+		"name" & colSep & ¬
+		"container" & colSep & ¬
+		"creation date" & colSep & ¬
+		"modification date" & colSep & ¬
+		"body" & colSep & ¬
+		"completed" & colSep & ¬
+		"completion date" & colSep & ¬
+		"due date" & colSep & ¬
+		"allday due date" & colSep & ¬
+		"remind me date" & colSep & ¬
+		"priority" & colSep & ¬
+		"flagged"
+	repeat with theReminder in every reminder
+		log (get id of theReminder) & colSep & ¬
+			(get name of theReminder) & colSep & ¬
+			(get id of container of theReminder) & colSep & ¬
+			(get creation date of theReminder) & colSep & ¬
+			(get modification date of theReminder) & colSep & ¬
+			(get body of theReminder) & colSep & ¬
+			(get completed of theReminder) & colSep & ¬
+			(get completion date of theReminder) & colSep & ¬
+			(get due date of theReminder) & colSep & ¬
+			(get allday due date of theReminder) & colSep & ¬
+			(get remind me date of theReminder) & colSep & ¬
+			(get priority of theReminder) & colSep & ¬
+			(get flagged of theReminder)
+	end repeat
+end tell
 AS
 }
 
