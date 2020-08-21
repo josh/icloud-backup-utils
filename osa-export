@@ -1,0 +1,124 @@
+#!/usr/bin/osascript -l JavaScript
+// usage: osa-export file ~/Desktop/Reminders.plist "com.apple.Reminders" "accounts,lists,reminders"
+// usage: osa-export directory ~/Desktop/Notes "com.apple.Notes" "accounts,folders,notes,attachments"
+
+const app = Application.currentApplication();
+app.includeStandardAdditions = true;
+
+const SystemEvents = Application("System Events");
+
+function logProgress(completed, total) {
+  console.log(`Progress ${completed}/${total}`);
+  Progress.completedUnitCount = completed;
+  Progress.totalUnitCount = total;
+}
+
+function mkdirp(path) {
+  app.doShellScript(`mkdir -p '${path}'`);
+}
+
+function writeRecordToPropertyList(root, record) {
+  const properties = record.properties();
+
+  for (const name in properties) {
+    switch (name) {
+      case "pcls": // class
+        continue;
+    }
+
+    const value = properties[name];
+    const kind = typeof value;
+
+    let item;
+    switch (kind) {
+      case "boolean":
+      case "string":
+      case "number":
+        item = { kind, name, value };
+        break;
+      case "function":
+        item = { kind: "string", name, value: value.id() };
+        break;
+      default:
+        if (value instanceof Date) {
+          item = { kind: "date", name, value };
+        } else if (value instanceof Path) {
+          item = { kind: "string", name, value: value.toString() };
+        } else if (value === null) {
+        } else {
+          console.log("unknown type", record.id(), value);
+        }
+    }
+
+    if (item) {
+      root.propertyListItems.push(SystemEvents.PropertyListItem(item));
+    }
+  }
+}
+
+function exportToFlatPlist(filename, app, propertyNames) {
+  const root = SystemEvents.PropertyListFile({ name: filename }).make();
+
+  for (const propertyName of propertyNames) {
+    console.log(`exporting ${propertyName}`);
+
+    const items = SystemEvents.PropertyListItem({
+      kind: "list",
+      name: propertyName,
+    });
+    root.propertyListItems.push(items);
+
+    const records = app[propertyName]();
+    const total = records.length;
+    let i = 0;
+
+    for (const record of records) {
+      logProgress(i, total);
+
+      items.propertyListItems.push(
+        SystemEvents.PropertyListItem({ kind: "record" })
+      );
+
+      writeRecordToPropertyList(items.propertyListItems.at(i), record);
+
+      i++;
+    }
+  }
+}
+
+function exportToDirectoryPlists(dirname, app, propertyNames) {
+  for (const propertyName of propertyNames) {
+    console.log(`exporting ${propertyName}`);
+
+    const records = app[propertyName]();
+    const total = records.length;
+    let i = 0;
+
+    for (const record of records) {
+      logProgress(i, total);
+
+      mkdirp(`${dirname}/${propertyName}`);
+      const filename = `${dirname}/${propertyName}/Item ${i}.plist`;
+      const root = SystemEvents.PropertyListFile({ name: filename }).make();
+
+      writeRecordToPropertyList(root, record);
+
+      i++;
+    }
+  }
+}
+
+function run(argv) {
+  const [command, path, appName, joinedNames] = argv;
+  const app = Application(appName);
+  const names = joinedNames.split(",");
+
+  switch (command[0]) {
+    case "f":
+      exportToFlatPlist(path, app, names);
+      break;
+    case "d":
+      exportToDirectoryPlists(path, app, names);
+      break;
+  }
+}
